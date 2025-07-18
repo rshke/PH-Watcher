@@ -4,7 +4,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(message.html, "text/html");
 
-        const ul = doc.querySelector("ul#mostRecentVideosSection");
+        let ul = doc.querySelector("ul#mostRecentVideosSection");
+        if (!ul) {
+            ul = doc.querySelector("ul#modelMostRecentVideosSection");
+        }
+
         const firstLi = ul?.querySelector("li");
         const liId = firstLi?.getAttribute("data-video-id");
 
