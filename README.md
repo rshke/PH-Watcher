@@ -36,3 +36,9 @@ So take a break — and let us help you chill.
 
 ### Keywords
 chrome extension, pornhub tracker, video update watcher, adult content notifier, PH model page, 自动检测更新, 书签更新提醒
+
+### HowToUse
+1.	Open Chrome and go to chrome://extensions/.
+2.	Enable Developer mode in the top-right corner.
+3.	Click “Load unpacked”.
+4.	In the file selection dialog, choose the folder containing this project.
