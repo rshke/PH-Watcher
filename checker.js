@@ -31,13 +31,16 @@ async function checkPornhubModelPage(url) {
 
     const key = `ph_hash_${url}`;
     const stored = await chrome.storage.local.get(key);
-    const oldIds = stored[key] || [];
+    const oldIds = stored[key]?.recent_video_id ?? [];
 
     const hasUpdate = JSON.stringify(newIds) !== JSON.stringify(oldIds);
 
-    if (hasUpdate) {
-      await chrome.storage.local.set({ [key]: newIds });
-    }
+    await chrome.storage.local.set({
+      [key]: {
+        recent_video_id: hasUpdate ? newIds : oldIds,
+        updated: hasUpdate
+      }
+    });
 
     return { url, changed: hasUpdate, latest: newIds };
   } catch (e) {
@@ -50,7 +53,6 @@ function getPornhubBookmarks() {
   return new Promise((resolve) => {
     chrome.bookmarks.getTree((tree) => {
       const urls = [];
-
       function collect(node) {
         if (node.url && node.url.includes("pornhub.com/model/")) {
           urls.push(node.url);
@@ -65,8 +67,27 @@ function getPornhubBookmarks() {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "checkPornhubPages") {
-    (async () => {
+  (async () => {
+    if (message.action === "checkPornhubPages") {
+      const storedCheck = await chrome.storage.local.get('ph_last_check');
+      const lastCheck = storedCheck.ph_last_check || 0;
+      const still_fresh = Date.now() - lastCheck < 24 * 60 * 60 * 1000;
+      if (still_fresh) {
+        console.log("Skipping check, last check was less than a day ago.");
+        chrome.storage.local.get(null, (data) => {
+          const results = Object.keys(data)
+            .filter(key => key.startsWith('ph_hash_'))
+            .filter(key => data[key]?.updated)
+            .map(key => ({
+              url: key.replace('ph_hash_', ''),
+              changed: true,
+              latest: data[key].recent_video_id
+            }));
+          sendResponse(results); // ✅ 只调用一次
+        });
+        return;
+      }
+
       try {
         const urls = await getPornhubBookmarks();
         const results = [];
@@ -76,14 +97,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           results.push(result);
         }
 
-        console.log("Returning results:", results);
+        await chrome.storage.local.set({ ph_last_check: Date.now() });
+        // console.log("Returning results:", results);
         sendResponse(results);
       } catch (err) {
         console.error("Error in background handler:", err);
         sendResponse({ error: true });
       }
-    })();
-
-    return true; // ✅ 必须在 if 外 return true
-  }
+    }
+  })();
+  return true; // ✅ 必须在外层 return true 以支持异步 sendResponse
 });
