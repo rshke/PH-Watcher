@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
       li.appendChild(a);
       list.appendChild(li);
     });
+
+    if (results.length > 0) {
+      showCelebration();
+    }
   });
 });
 
@@ -55,5 +59,26 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
     li.textContent = "No updates found.";
     list.appendChild(li);
   }
+
+  if (updatedCount > 0) {
+    showCelebration();
+  }
 });
 
+function showCelebration() {
+  const gif = document.createElement("img");
+  gif.src = "images/party-popper.gif";
+  Object.assign(gif.style, {
+    position: "fixed",
+    top: "20%",
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "250px",
+    zIndex: "9999",
+    pointerEvents: "none"
+  });
+
+  document.body.appendChild(gif);
+
+  setTimeout(() => gif.remove(), 4000); // 2秒后移除，确保动画播放完
+}
