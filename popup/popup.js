@@ -1,5 +1,16 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const list = document.getElementById("resultList");
+  const lastCheckInfo = document.getElementById("lastCheckInfo");
+
+  // Display last check time
+  const storedCheck = await chrome.storage.local.get('ph_last_check');
+  const lastCheckTimestamp = storedCheck.ph_last_check || 0;
+  if (lastCheckTimestamp > 0) {
+    const lastCheckDate = new Date(lastCheckTimestamp);
+    lastCheckInfo.textContent = ` (Last check: ${lastCheckDate.toLocaleDateString()} ${lastCheckDate.toLocaleTimeString()})`;
+  } else {
+    lastCheckInfo.textContent = ` (Never checked)`;
+  }
 
   chrome.storage.local.get(null, (data) => {
     const results = Object.keys(data)
@@ -32,8 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById("checkBtn").addEventListener("click", async () => {
   const list = document.getElementById("resultList");
   list.innerHTML = "Checking...";
+  const lastCheckInfo = document.getElementById("lastCheckInfo");
+  lastCheckInfo.textContent = " (Checking now...)";
 
-  const response = await chrome.runtime.sendMessage({ action: "checkPornhubPages" });
+  const response = await chrome.runtime.sendMessage({ action: "checkPornhubPages", force: true });
 
   list.innerHTML = "";
   let updatedCount = 0;
@@ -62,6 +75,16 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
 
   if (updatedCount > 0) {
     showCelebration();
+  }
+
+  // Update last check info after the check is complete
+  const storedCheck = await chrome.storage.local.get('ph_last_check');
+  const lastCheckTimestamp = storedCheck.ph_last_check || 0;
+  if (lastCheckTimestamp > 0) {
+    const lastCheckDate = new Date(lastCheckTimestamp);
+    lastCheckInfo.textContent = ` (Last check: ${lastCheckDate.toLocaleDateString()} ${lastCheckDate.toLocaleTimeString()})`;
+  } else {
+    lastCheckInfo.textContent = ` (Never checked)`;
   }
 });
 

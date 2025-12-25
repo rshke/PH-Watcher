@@ -34,6 +34,14 @@ Life is already tough enough.
 放松一下吧。
 So take a break — and let us help you chill.
 
+### File Structure
+- `manifest.json`: The extension's manifest file.
+- `background/`: Contains the background script (`checker.js`).
+- `popup/`: Contains the popup's HTML and JavaScript files (`popup.html`, `popup.js`).
+- `offscreen/`: Contains the offscreen document's HTML and JavaScript files (`offscreen.html`, `offscreen.js`).
+- `icons/`: Contains the extension's icons.
+- `images/`: Contains other images used by the extension.
+
 ### Keywords
 chrome extension, pornhub tracker, video update watcher, adult content notifier, PH model page, 自动检测更新, 书签更新提醒
 
