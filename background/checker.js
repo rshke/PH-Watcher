@@ -2,7 +2,7 @@ async function ensureOffscreen() {
   const existing = await chrome.offscreen.hasDocument();
   if (!existing) {
     await chrome.offscreen.createDocument({
-      url: 'offscreen.html',
+      url: 'offscreen/offscreen.html',
       reasons: ['DOM_PARSER'],
       justification: 'Parse HTML in a hidden environment'
     });
@@ -71,7 +71,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "checkPornhubPages") {
       const storedCheck = await chrome.storage.local.get('ph_last_check');
       const lastCheck = storedCheck.ph_last_check || 0;
-      const still_fresh = Date.now() - lastCheck < 24 * 60 * 60 * 1000;
+      const still_fresh = !message.force && (Date.now() - lastCheck < 24 * 60 * 60 * 1000);
       if (still_fresh) {
         console.log("Skipping check, last check was less than a day ago.");
         chrome.storage.local.get(null, (data) => {
