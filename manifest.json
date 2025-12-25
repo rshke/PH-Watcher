@@ -11,5 +11,15 @@
   },
   "background": {
     "service_worker": "background/checker.js"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "images/party-popper.gif"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
 }
