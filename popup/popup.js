@@ -88,8 +88,9 @@ function createListItem(item, list) {
   const modelName = getModelName(item.url);
 
   a.href = item.url;
-  a.textContent = `Updated: ${modelName}`;
+  a.textContent = modelName;
   a.target = "_blank";
+  a.className = "model-link";
 
   li.appendChild(a);
   
@@ -108,10 +109,10 @@ async function createRatingBlock(url, parent) {
 
   const container = document.createElement("div");
   Object.assign(container.style, {
-    marginTop: "5px",
     display: "flex",
     alignItems: "center",
-    fontSize: "14px"
+    fontSize: "14px",
+    flexShrink: "0"
   });
 
   const starsContainer = document.createElement("div");

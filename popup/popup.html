@@ -3,6 +3,37 @@
 <head>
   <meta charset="UTF-8"/>
   <title>Pornhub Watcher</title>
+  <style>
+    body {
+      min-width: 400px;
+      font-family: sans-serif;
+      padding: 10px;
+    }
+    #resultList {
+      list-style: none;
+      padding: 0;
+    }
+    #resultList li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    #resultList li:last-child {
+      border-bottom: none;
+    }
+    .model-link {
+      text-decoration: none;
+      color: #0066cc;
+      font-weight: bold;
+      flex-grow: 1;
+      margin-right: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
   <h3>Check for Updates</h3>
