@@ -101,7 +101,7 @@ function createListItem(item, list) {
   const deleteBtn = document.createElement("button");
   deleteBtn.textContent = "×";
   deleteBtn.title = "Delete bookmark";
-  deleteBtn.style.marginLeft = "10px";
+  deleteBtn.style.marginLeft = "20px";
   deleteBtn.style.cursor = "pointer";
   deleteBtn.style.background = "none";
   deleteBtn.style.border = "none";
