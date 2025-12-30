@@ -63,8 +63,15 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
 
 function updateLastCheckDisplay(element, timestamp) {
   if (timestamp > 0) {
-    const lastCheckDate = new Date(timestamp);
-    element.textContent = ` (Last check: ${lastCheckDate.toLocaleDateString()} ${lastCheckDate.toLocaleTimeString()})`;
+    const diff = Date.now() - timestamp;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    let timeStr = "";
+    if (days > 0) timeStr += `${days} day${days > 1 ? 's' : ''} `;
+    timeStr += `${hours} hour${hours > 1 ? 's' : ''}`;
+    
+    element.textContent = ` (${timeStr} ago)`;
   } else {
     element.textContent = ` (Never checked)`;
   }
