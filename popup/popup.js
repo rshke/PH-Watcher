@@ -5,12 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Display last check time
   const storedCheck = await chrome.storage.local.get('ph_last_check');
   const lastCheckTimestamp = storedCheck.ph_last_check || 0;
-  if (lastCheckTimestamp > 0) {
-    const lastCheckDate = new Date(lastCheckTimestamp);
-    lastCheckInfo.textContent = ` (Last check: ${lastCheckDate.toLocaleDateString()} ${lastCheckDate.toLocaleTimeString()})`;
-  } else {
-    lastCheckInfo.textContent = ` (Never checked)`;
-  }
+  updateLastCheckDisplay(lastCheckInfo, lastCheckTimestamp);
 
   chrome.storage.local.get(null, (data) => {
     const results = Object.keys(data)
@@ -23,15 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("Last updated URLs:", results);
 
     results.forEach(item => {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-
-      a.href = item.url;
-      a.textContent = `Updated: ${item.url}`;
-      a.target = "_blank";
-
-      li.appendChild(a);
-      list.appendChild(li);
+      createListItem(item, list);
     });
 
     if (results.length > 0) {
@@ -55,16 +42,7 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
     if (!item.changed) return;
 
     updatedCount++;
-
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-
-    a.href = item.url;
-    a.textContent = `Updated: ${item.url}`;
-    a.target = "_blank"; // 在新标签页打开
-
-    li.appendChild(a);
-    list.appendChild(li);
+    createListItem(item, list);
   });
 
   if (updatedCount === 0) {
@@ -80,17 +58,105 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
   // Update last check info after the check is complete
   const storedCheck = await chrome.storage.local.get('ph_last_check');
   const lastCheckTimestamp = storedCheck.ph_last_check || 0;
-  if (lastCheckTimestamp > 0) {
-    const lastCheckDate = new Date(lastCheckTimestamp);
-    lastCheckInfo.textContent = ` (Last check: ${lastCheckDate.toLocaleDateString()} ${lastCheckDate.toLocaleTimeString()})`;
-  } else {
-    lastCheckInfo.textContent = ` (Never checked)`;
-  }
+  updateLastCheckDisplay(lastCheckInfo, lastCheckTimestamp);
 });
+
+function updateLastCheckDisplay(element, timestamp) {
+  if (timestamp > 0) {
+    const lastCheckDate = new Date(timestamp);
+    element.textContent = ` (Last check: ${lastCheckDate.toLocaleDateString()} ${lastCheckDate.toLocaleTimeString()})`;
+  } else {
+    element.textContent = ` (Never checked)`;
+  }
+}
+
+function createListItem(item, list) {
+  const li = document.createElement("li");
+  const a = document.createElement("a");
+
+  a.href = item.url;
+  a.textContent = `Updated: ${item.url}`;
+  a.target = "_blank";
+
+  li.appendChild(a);
+  
+  // Add rating block
+  createRatingBlock(item.url, li);
+
+  list.appendChild(li);
+}
+
+async function createRatingBlock(url, parent) {
+  const ratingKey = `ph_rating_${url}`;
+  
+  // Fetch initial data
+  const stored = await chrome.storage.local.get(ratingKey);
+  let history = stored[ratingKey]?.history || [];
+
+  const container = document.createElement("div");
+  Object.assign(container.style, {
+    marginTop: "5px",
+    display: "flex",
+    alignItems: "center",
+    fontSize: "14px"
+  });
+
+  const starsContainer = document.createElement("div");
+  starsContainer.style.cursor = "pointer";
+  
+  const avgDisplay = document.createElement("span");
+  avgDisplay.style.marginLeft = "10px";
+  avgDisplay.style.color = "#666";
+  avgDisplay.style.fontSize = "12px";
+
+  // Function to render stars and text
+  const render = (currentHistory) => {
+    starsContainer.innerHTML = ""; // Clear existing stars
+    
+    // Calculate average
+    const avg = currentHistory.length > 0
+      ? (currentHistory.reduce((a, b) => a + b, 0) / currentHistory.length)
+      : 0;
+
+    // Render 5 stars
+    for (let i = 1; i <= 5; i++) {
+      const star = document.createElement("span");
+      star.textContent = "★";
+      star.style.color = i <= Math.round(avg) ? "#FFD700" : "#ccc"; // Gold or Gray
+      star.style.marginRight = "2px";
+      star.title = `Rate ${i} star${i > 1 ? 's' : ''}`;
+      
+      // Click handler
+      star.onclick = async (e) => {
+        e.preventDefault(); // Prevent link click if bubbled (though it's outside 'a')
+        
+        // Add new rating
+        const newHistory = [...currentHistory, i];
+        await chrome.storage.local.set({ [ratingKey]: { history: newHistory } });
+        
+        // Re-render
+        render(newHistory);
+      };
+
+      starsContainer.appendChild(star);
+    }
+
+    avgDisplay.textContent = currentHistory.length > 0
+      ? `Avg: ${avg.toFixed(1)} (${currentHistory.length})`
+      : "No ratings yet";
+  };
+
+  // Initial render
+  render(history);
+
+  container.appendChild(starsContainer);
+  container.appendChild(avgDisplay);
+  parent.appendChild(container);
+}
 
 function showCelebration() {
   const gif = document.createElement("img");
-  gif.src = "images/party-popper.gif";
+  gif.src = "../images/party-popper.gif";
   Object.assign(gif.style, {
     position: "fixed",
     top: "20%",
