@@ -97,7 +97,41 @@ function createListItem(item, list) {
   // Add rating block
   createRatingBlock(item.url, li);
 
+  // Add delete button
+  const deleteBtn = document.createElement("button");
+  deleteBtn.textContent = "×";
+  deleteBtn.title = "Delete bookmark";
+  deleteBtn.style.marginLeft = "10px";
+  deleteBtn.style.cursor = "pointer";
+  deleteBtn.style.background = "none";
+  deleteBtn.style.border = "none";
+  deleteBtn.style.color = "#999";
+  deleteBtn.style.fontSize = "16px";
+  deleteBtn.onclick = async () => {
+    if (confirm(`Are you sure you want to delete bookmark for ${modelName}?`)) {
+      await deleteBookmark(item.url);
+      li.remove();
+    }
+  };
+  li.appendChild(deleteBtn);
+
   list.appendChild(li);
+}
+
+async function deleteBookmark(url) {
+  try {
+    const bookmarks = await chrome.bookmarks.search({ url });
+    for (const bookmark of bookmarks) {
+      await chrome.bookmarks.remove(bookmark.id);
+    }
+    console.log(`Deleted bookmark: ${url}`);
+    
+    // Also remove from local storage
+    await chrome.storage.local.remove([`ph_hash_${url}`, `ph_rating_${url}`]);
+    
+  } catch (err) {
+    console.error(`Error deleting bookmark ${url}:`, err);
+  }
 }
 
 async function createRatingBlock(url, parent) {
