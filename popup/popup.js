@@ -63,8 +63,15 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
 
 function updateLastCheckDisplay(element, timestamp) {
   if (timestamp > 0) {
-    const lastCheckDate = new Date(timestamp);
-    element.textContent = ` (Last check: ${lastCheckDate.toLocaleDateString()} ${lastCheckDate.toLocaleTimeString()})`;
+    const diff = Date.now() - timestamp;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    let timeStr = "";
+    if (days > 0) timeStr += `${days} day${days > 1 ? 's' : ''} `;
+    timeStr += `${hours} hour${hours > 1 ? 's' : ''}`;
+    
+    element.textContent = ` (${timeStr} ago)`;
   } else {
     element.textContent = ` (Never checked)`;
   }
@@ -97,7 +104,41 @@ function createListItem(item, list) {
   // Add rating block
   createRatingBlock(item.url, li);
 
+  // Add delete button
+  const deleteBtn = document.createElement("button");
+  deleteBtn.textContent = "×";
+  deleteBtn.title = "Delete bookmark";
+  deleteBtn.style.marginLeft = "20px";
+  deleteBtn.style.cursor = "pointer";
+  deleteBtn.style.background = "none";
+  deleteBtn.style.border = "none";
+  deleteBtn.style.color = "#999";
+  deleteBtn.style.fontSize = "16px";
+  deleteBtn.onclick = async () => {
+    if (confirm(`Are you sure you want to delete bookmark for ${modelName}?`)) {
+      await deleteBookmark(item.url);
+      li.remove();
+    }
+  };
+  li.appendChild(deleteBtn);
+
   list.appendChild(li);
+}
+
+async function deleteBookmark(url) {
+  try {
+    const bookmarks = await chrome.bookmarks.search({ url });
+    for (const bookmark of bookmarks) {
+      await chrome.bookmarks.remove(bookmark.id);
+    }
+    console.log(`Deleted bookmark: ${url}`);
+    
+    // Also remove from local storage
+    await chrome.storage.local.remove([`ph_hash_${url}`, `ph_rating_${url}`]);
+    
+  } catch (err) {
+    console.error(`Error deleting bookmark ${url}:`, err);
+  }
 }
 
 async function createRatingBlock(url, parent) {
