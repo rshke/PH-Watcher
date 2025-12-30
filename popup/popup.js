@@ -90,7 +90,7 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
 
 function showCelebration() {
   const gif = document.createElement("img");
-  gif.src = "images/party-popper.gif";
+  gif.src = "../images/party-popper.gif";
   Object.assign(gif.style, {
     position: "fixed",
     top: "20%",
