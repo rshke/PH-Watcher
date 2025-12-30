@@ -70,12 +70,25 @@ function updateLastCheckDisplay(element, timestamp) {
   }
 }
 
+function getModelName(url) {
+  try {
+    const parts = url.split('/model/');
+    if (parts.length > 1) {
+      return parts[1].split('/')[0];
+    }
+  } catch (e) {
+    console.error("Error parsing model name:", e);
+  }
+  return url;
+}
+
 function createListItem(item, list) {
   const li = document.createElement("li");
   const a = document.createElement("a");
+  const modelName = getModelName(item.url);
 
   a.href = item.url;
-  a.textContent = `Updated: ${item.url}`;
+  a.textContent = `Updated: ${modelName}`;
   a.target = "_blank";
 
   li.appendChild(a);
